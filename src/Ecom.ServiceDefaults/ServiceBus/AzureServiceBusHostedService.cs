@@ -1,11 +1,22 @@
-namespace Microsoft.Extensions.Hosting.ServiceBus;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.ServiceBus;
+using Microsoft.Extensions.Logging;
 
-public class AzureServiceBusHostedService(IEnumerable<IRootHandler> rootHandlers) : BackgroundService
+namespace Ecom.ServiceDefaults.ServiceBus;
+
+public class AzureServiceBusHostedService(
+    ILogger<AzureServiceBusHostedService> logger,
+    IEnumerable<IRootHandler> rootHandlers) : BackgroundService
 {
-    protected override Task ExecuteAsync(
+    protected override async Task ExecuteAsync(
         CancellationToken stoppingToken)
     {
+        logger.LogInformation("Starting Azure Service Bus Hosted Service");
+        
         var tasks = rootHandlers.Select(x => x.StartAsync());
-        return Task.WhenAll(tasks);
+        
+        await Task.WhenAll(tasks);
+        
+        logger.LogInformation("Started Azure Service Bus Hosted Service");
     }
 }

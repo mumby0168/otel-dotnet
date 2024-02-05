@@ -12,26 +12,28 @@ public interface IRootHandler
 
 public interface IMessageHandler<in T> : IRootHandler where T : IEvent
 {
-    static abstract string Topic { get; }
     
     Task HandleAsync(T message);
 }
 
-public abstract class MessageHandlerBase<T>(ServiceBusClient client, ILogger logger) : IMessageHandler<T> where T : IEvent
+public abstract class MessageHandlerBase<T>(ServiceBusClient client, ILogger<IMessageHandler<T>> logger) : IMessageHandler<T> where T : IEvent
 {
-    public static string Topic { get; }
     public abstract Task HandleAsync(T message);
     
-    public Task StartAsync()
+    public async Task StartAsync()
     {
-        var processor = client.CreateProcessor(Topic);
+        var processor = client.CreateProcessor(T.Topic, "example-sub");
         processor.ProcessMessageAsync += ProcessMessageAsync;
         processor.ProcessErrorAsync += ProcessErrorAsync;
-        return processor.StartProcessingAsync();
+        logger.LogInformation("Starting processing messages for {Topic}", T.Topic);
+        await processor.StartProcessingAsync();
+        logger.LogInformation("Started processing messages for {Topic}", T.Topic);
     }
     
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
+        logger.LogInformation("Processing message: {Message}", args.Message.MessageId);
+        
         try
         {
             var body = args.Message.Body.ToString();

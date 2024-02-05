@@ -1,11 +1,25 @@
+using Ecom.AppHost;
+using Microsoft.Extensions.Configuration;
 using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Ecom_Api>("gateway");
+var cosmos = builder.AddAzureCosmosDB("cosmos");
+var serviceBus = builder.AddAzureServiceBus("serviceBus");
 
-builder.AddProject<Ecom_OrderProccessor>("orders");
+var stockApi = builder.AddProject<Ecom_StockApi>("stock")
+    .WithReference(cosmos)
+    .AddEnvironmentVariablesForOtelExporters(builder.Configuration);
 
-builder.AddProject<Ecom_StockApi>("stock");
+builder.AddProject<Ecom_Api>("gateway")
+    .WithReference(serviceBus)
+    .WithReference(stockApi)
+    .AddEnvironmentVariablesForOtelExporters(builder.Configuration);
+
+builder.AddProject<Ecom_OrderProccessor>("orders")
+    .WithReference(serviceBus)
+    .WithReference(stockApi)
+    .AddEnvironmentVariablesForOtelExporters(builder.Configuration);
 
 builder.Build().Run();
+

@@ -1,4 +1,5 @@
 namespace Ecom.Contracts.Stocks;
 
 public record CheckStockRequest(
-    List<(string Sku, int Count)> RequiredStock);
+    List<StockRequestItem> RequiredStock);
+public record StockRequestItem(string Sku, int Count);

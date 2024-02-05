@@ -4,5 +4,7 @@ public interface ICosmosItem
 {
     abstract static string ContainerName { get; }
     
+    string Id { get; }
+    
     string PartitionKey { get; }
 }

@@ -24,7 +24,7 @@ public class CosmosDataAccess(CosmosClient cosmosClient)
                 "/partitionKey"));
 
         Senders[T.ContainerName] = _cosmosClient.GetContainer(
-            Environment.GetEnvironmentVariable("CosmosDatabaseName"),
+            "ecom",
             T.ContainerName);
 
 

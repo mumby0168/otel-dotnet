@@ -13,6 +13,9 @@
 
     <ItemGroup>
       <PackageReference Include="Aspire.Azure.Messaging.ServiceBus" Version="8.0.0-preview.2.23619.3" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.5.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,7 @@
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting.ServiceBus;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using OtelExporters.Extensions;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -44,7 +47,8 @@ public static class Extensions
             .WithMetrics(metrics =>
             {
                 metrics.AddRuntimeInstrumentation()
-                       .AddBuiltInMeters();
+                       .AddBuiltInMeters()
+                       .AddDynatraceExporter(builder.Configuration);
             })
             .WithTracing(tracing =>
             {
@@ -53,10 +57,13 @@ public static class Extensions
                     // We want to view all traces in development
                     tracing.SetSampler(new AlwaysOnSampler());
                 }
+                
+                AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
+                tracing.AddSource("Azure.*");
 
                 tracing.AddAspNetCoreInstrumentation()
-                       .AddGrpcClientInstrumentation()
-                       .AddHttpClientInstrumentation();
+                    .AddGrpcClientInstrumentation()
+                    .AddHttpClientInstrumentation();
             });
 
         builder.AddOpenTelemetryExporters();
@@ -66,22 +73,35 @@ public static class Extensions
 
     private static IHostApplicationBuilder AddOpenTelemetryExporters(this IHostApplicationBuilder builder)
     {
+        var honeycombOptions = builder.Configuration.GetHoneycombOptions();
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
         if (useOtlpExporter)
         {
-            builder.Services.Configure<OpenTelemetryLoggerOptions>(logging => logging.AddOtlpExporter());
-            builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => metrics.AddOtlpExporter());
-            builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddOtlpExporter());
+            builder.Services.Configure<OpenTelemetryLoggerOptions>(logging =>
+            {
+                logging
+                    .AddOtlpExporter()
+                    .AddDynatraceExporter(builder.Configuration)
+                    .AddAzureMonitorLogExporter();
+            });
+            builder.Services.ConfigureOpenTelemetryMeterProvider(metrics =>
+            {
+                metrics
+                    .AddOtlpExporter()
+                    .AddDynatraceExporter(builder.Configuration)
+                    .AddAzureMonitorMetricExporter()
+                    .AddHoneycomb(honeycombOptions);
+            });
+            builder.Services.ConfigureOpenTelemetryTracerProvider(tracing =>
+            {
+                tracing
+                    .AddOtlpExporter()
+                    .AddDynatraceExporter(builder.Configuration)
+                    .AddAzureMonitorTraceExporter()
+                    .AddHoneycomb(honeycombOptions);
+            });
         }
-
-        // Uncomment the following lines to enable the Prometheus exporter (requires the OpenTelemetry.Exporter.Prometheus.AspNetCore package)
-        // builder.Services.AddOpenTelemetry()
-        //    .WithMetrics(metrics => metrics.AddPrometheusExporter());
-
-        // Uncomment the following lines to enable the Azure Monitor exporter (requires the Azure.Monitor.OpenTelemetry.Exporter package)
-        // builder.Services.AddOpenTelemetry()
-        //    .UseAzureMonitor();
 
         return builder;
     }
@@ -89,7 +109,6 @@ public static class Extensions
     public static IHostApplicationBuilder AddDefaultHealthChecks(this IHostApplicationBuilder builder)
     {
         builder.Services.AddHealthChecks()
-            // Add a default liveness check to ensure app is responsive
             .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
 
         return builder;
@@ -97,13 +116,7 @@ public static class Extensions
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
-        // Uncomment the following line to enable the Prometheus endpoint (requires the OpenTelemetry.Exporter.Prometheus.AspNetCore package)
-        // app.MapPrometheusScrapingEndpoint();
-
-        // All health checks must pass for app to be considered ready to accept traffic after starting
         app.MapHealthChecks("/health");
-
-        // Only health checks tagged with the "live" tag must pass for app to be considered alive
         app.MapHealthChecks("/alive", new HealthCheckOptions
         {
             Predicate = r => r.Tags.Contains("live")
