@@ -7,9 +7,9 @@ public class StockRecord : ICosmosItem
     public static string ContainerName => "stock";
     public string Id { get; }
     public string PartitionKey { get; }
-    
+
     public string Sku { get; set; }
-    
+
     public int Count { get; set; }
 
     public StockRecord(string sku, int count)

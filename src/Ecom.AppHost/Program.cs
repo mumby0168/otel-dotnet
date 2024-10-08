@@ -22,4 +22,3 @@ builder.AddProject<Ecom_OrderProccessor>("orders")
     .AddEnvironmentVariablesForOtelExporters(builder.Configuration);
 
 builder.Build().Run();
-

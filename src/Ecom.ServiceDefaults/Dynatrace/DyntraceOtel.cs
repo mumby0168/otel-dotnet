@@ -16,11 +16,11 @@ public static class OpenTelemetryConfigurationExtensions
 {
     public const string OpenTelemetryConfigurationSection = "OpenTelemetry";
     public const string DynatraceConfigurationSection = $"{OpenTelemetryConfigurationSection}:Dynatrace";
-    
+
     public static TracerProviderBuilder AddDynatraceExporter(this TracerProviderBuilder builder,
         IConfiguration configuration)
     {
-        DynatraceOptions dynatraceOptions = new DynatraceOptions();
+        var dynatraceOptions = new DynatraceOptions();
         configuration.Bind(DynatraceConfigurationSection, dynatraceOptions);
         return builder.AddOtlpExporter(exporterOptions =>
         {
@@ -29,11 +29,11 @@ public static class OpenTelemetryConfigurationExtensions
             exporterOptions.Headers = $"Authorization=Api-Token {dynatraceOptions.ApiToken}";
         });
     }
-    
+
     public static MeterProviderBuilder AddDynatraceExporter(this MeterProviderBuilder builder,
         IConfiguration configuration)
     {
-        DynatraceOptions dynatraceOptions = new DynatraceOptions();
+        var dynatraceOptions = new DynatraceOptions();
         configuration.Bind(DynatraceConfigurationSection, dynatraceOptions);
         return builder.AddOtlpExporter((exporterOptions, readerOptions) =>
         {
@@ -43,11 +43,11 @@ public static class OpenTelemetryConfigurationExtensions
             readerOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
         });
     }
-    
+
     public static OpenTelemetryLoggerOptions AddDynatraceExporter(this OpenTelemetryLoggerOptions options,
         IConfiguration configuration)
     {
-        DynatraceOptions dynatraceOptions = new DynatraceOptions();
+        var dynatraceOptions = new DynatraceOptions();
         configuration.Bind(DynatraceConfigurationSection, dynatraceOptions);
         return options.AddOtlpExporter((exporterOptions, _) =>
         {

@@ -12,11 +12,11 @@ public class AzureServiceBusHostedService(
         CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting Azure Service Bus Hosted Service");
-        
+
         var tasks = rootHandlers.Select(x => x.StartAsync());
-        
+
         await Task.WhenAll(tasks);
-        
+
         logger.LogInformation("Started Azure Service Bus Hosted Service");
     }
 }

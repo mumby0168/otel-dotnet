@@ -18,9 +18,9 @@ public class RequestHandlers
         Activity.Current?.SetTag(
             "customer.id",
             request.CustomerId);
-    
+
         logger.LogInformation("Trying to place order for {CustomerId}", request.CustomerId);
-    
+
         var response = await httpClient.PostAsync(
             "http://stock/api/check-stock",
             new StringContent(
@@ -51,7 +51,7 @@ public class RequestHandlers
                 lines));
 
         logger.LogInformation("Placed order {OrderId} for {CustomerId}", orderId, request.CustomerId);
-    
+
         return TypedResults.Ok();
     }
 }

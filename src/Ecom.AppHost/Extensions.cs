@@ -21,7 +21,7 @@ public static class Extensions
         resource.WithEnvironment(
             "APPLICATIONINSIGHTS_CONNECTION_STRING",
             configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING"));
-        
+
         resource.WithEnvironment(
             "Honeycomb:ApiKey",
             configuration.GetValue<string>("Honeycomb:ApiKey"));

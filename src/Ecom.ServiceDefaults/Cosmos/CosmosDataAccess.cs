@@ -11,7 +11,7 @@ public class CosmosDataAccess(CosmosClient cosmosClient)
     {
         if (Senders.TryGetValue(
                 T.ContainerName,
-                out Container? value))
+                out var value))
         {
             return value;
         }
@@ -30,7 +30,7 @@ public class CosmosDataAccess(CosmosClient cosmosClient)
 
         return Senders[T.ContainerName];
     }
-    
+
     public async Task<T> GetItemAsync<T>(
         string id,
         string partitionKey) where T : ICosmosItem
@@ -43,7 +43,7 @@ public class CosmosDataAccess(CosmosClient cosmosClient)
 
         return response.Resource;
     }
-    
+
     public async Task CreateItemAsync<T>(
         T item) where T : ICosmosItem
     {

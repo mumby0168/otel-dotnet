@@ -57,7 +57,7 @@ public static class Extensions
                     // We want to view all traces in development
                     tracing.SetSampler(new AlwaysOnSampler());
                 }
-                
+
                 AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
                 tracing.AddSource("Azure.*");
 
