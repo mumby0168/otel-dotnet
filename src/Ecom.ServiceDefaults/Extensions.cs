@@ -62,7 +62,6 @@ public static class Extensions
                 tracing.AddSource("Azure.*");
 
                 tracing.AddAspNetCoreInstrumentation()
-                    .AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation();
             });
 

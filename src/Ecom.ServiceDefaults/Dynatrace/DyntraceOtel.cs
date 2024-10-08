@@ -8,8 +8,8 @@ namespace OtelExporters.Extensions;
 
 public class DynatraceOptions
 {
-    public string ApiToken { get; set; }
-    public string Endpoint { get; set; }
+    public string ApiToken { get; set; } = null!;
+    public string Endpoint { get; set; } = null!;
 }
 
 public static class OpenTelemetryConfigurationExtensions
